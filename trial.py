@@ -1,16 +1,26 @@
 import numpy as np
+import itertools
 import matplotlib.pyplot as plt
 from ECG_processing import ECG_Processing
 from plotting import plot
 
+'''
+a = np.arange(10)+10
+ind = np.where(a>14)
+for i in ind:
+    print (a[i])
+for (i,v) in itertools.zip_longest(np.ndindex(a.shape),a):
+    print(i[0]+1,v)
+'''
+e = ECG_Processing('DataN.txt')
 
-e = ECG_Processing('Data2.txt')
-#plt.subplot(1,2,1)
 plot.counter = 0
-
-plot(e.signal_init[:500])
-plot(e.noise_filtering()[:500])
-plot(e.process_signal(20)[:500],np.array([0,216.3,440.951])/256)
+e.signal_init[:500]
+e.noise_filtering()[:500]
+sig,timeS = e.process_signal(20)
+plot(sig[:500],time_stamps=timeS)
+#plot(signal=sig,time_stamps=timeS)
+plot(e.RR_compute(time_stamps=timeS))
 plt.show()
 '''
 x = np.arange(5)
