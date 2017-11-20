@@ -8,6 +8,7 @@ class ECG_Processing:
         file = open(dataFile, 'r')
         signal_strings = file.read().split('\n')
         self.signal_init = np.asarray(signal_strings,dtype=np.float)
+        self.signal_filtered = None
         file.close()
         self.fs = fs
     def noise_filtering(self):
@@ -28,7 +29,7 @@ class ECG_Processing:
             signal = self.signal_init
     #1)Differentiate
         signal = self.__differentiate(signal)
-        plt.plot(signal[:1000])
+        #plt.plot(signal[:1000])
     #2)Square
         signal = np.square(signal)
     #3)Smooth
@@ -62,26 +63,31 @@ class ECG_Processing:
         prev_i = array_above_indices[0][0] - 1
         dict = {}
         for i in array_above_indices[0]:
-            if (i - prev_i) == 1:
+            if ((i - prev_i) == 1) or ((i-prev_i)==2): #the secind check is a fix for a bug in np.where
                 dict[i] = signal[i]
+                #print(i,"in")
             else :
+                #print(i,'out')
                 index = max(dict, key =dict.get)
                 time_stamps = np.append(time_stamps, float(index / self.fs))
                 dict = {}
             prev_i = i
-        '''
-            if signal[i] > max :
-                max = signal[i]
-                updated = False
-                index = i
-            else :
-                if updated == False:
-                    time_stamps = np.append(time_stamps,float(index/self.fs))
-                    max = 0
-                    updated = True
-        '''
         return time_stamps
+
     def RR_compute(self,time_stamps):
         RR = time_stamps[1:None]
         RR = RR - time_stamps[0:-1]
         return RR
+
+    # Q2 : we want to have an estimate of the longest possible R_R
+    # knowing that the R_R interval is between 0.6 to 1 sec (100 to 60 bpm) for a normal person
+    # severeal sources claim resting heart beat may be as low as 40 or 50 for athletes
+    # so we will use 40 bpm as our threshold -> 1.5 sec
+
+    def sinus_arrest_detect(self, RR, time_stamps):
+        # mb for missing beats
+        mb_start_indices = np.where(RR > 1.5)
+        mb_RR = RR[RR > 1.5]
+        mb_start_times = time_stamps[mb_start_indices]
+        mb_times = mb_RR / 2 + mb_start_times
+        return mb_times
