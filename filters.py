@@ -1,6 +1,5 @@
 from scipy.signal import butter, lfilter, iirnotch
 
-
 def butter_bandpass_filter(data, lowcut, highcut, fs=256, order=5):
     nyq = 0.5 * fs
     low = lowcut / nyq

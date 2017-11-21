@@ -29,7 +29,6 @@ class ECG_Processing:
             signal = self.signal_init
     #1)Differentiate
         signal = self.__differentiate(signal)
-        #plt.plot(signal[:1000])
     #2)Square
         signal = np.square(signal)
     #3)Smooth
@@ -46,18 +45,21 @@ class ECG_Processing:
         for i in range(signal_diff.size):
             signal_diff[i] = np.sum(kernel*signal[i:i+5])*den
         return signal_diff
+
     def __smooth(self,signal,N):
-        kernel = np.ones(N,dtype=float) * (1/N)
+        kernel = np.ones(N,dtype=float)*(1/N)
         signal_smoothed = np.zeros_like(signal)
         signal = np.append(signal,np.zeros(N-1))
-        signal_smoothed[0] = np.sum(signal[0:N]*kernel)
         for i in range(signal_smoothed.size):
             signal_smoothed[i] = np.sum(signal[i:i+N]*kernel)
         return signal_smoothed
 
-    #"""By visualizing the signal through different intervals a threshold of 0.5 to 0.3 the maximum value shows to be adecquete"""
+
     def __threshold(self,signal):
-        threshold = np.max(signal)*0.4
+        #About 30% abouve the mean line
+        #the mean line is like a base line above the noise
+        #This is mostly effective in the case of noisy signal where there is an offset to the signal
+        threshold = (np.max(signal)-np.mean(signal))*0.3 + np.mean(signal)
         array_above_indices = np.where(signal>threshold)
         time_stamps = np.array([],dtype=np.float)
         prev_i = array_above_indices[0][0] - 1
@@ -65,9 +67,9 @@ class ECG_Processing:
         for i in array_above_indices[0]:
             if ((i - prev_i) == 1) or ((i-prev_i)==2): #the secind check is a fix for a bug in np.where
                 dict[i] = signal[i]
-                #print(i,"in")
             else :
-                #print(i,'out')
+                if dict =={} :
+                    dict[i]=signal[i]
                 index = max(dict, key =dict.get)
                 time_stamps = np.append(time_stamps, float(index / self.fs))
                 dict = {}
