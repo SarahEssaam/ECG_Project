@@ -12,8 +12,8 @@ class ECG_Processing:
         file.close()
         self.fs = fs
     def noise_filtering(self):
-        #Apply a bandpass filter of 0.1 to 45 Hz band
-        #The Bps is of order 5 so the notch filter of 60 Hz is not important
+        #Apply a notch filter of 50 Hz
+        #Then Apply a bandpass filter of 0.1 to 45 Hz band
         self.signal_filtered = filters.notch_Filter(self.signal_init,freq=50,fs=self.fs)
         self.signal_filtered = filters.butter_bandpass_filter(self.signal_filtered,0.1,45,self.fs)
         return self.signal_filtered
@@ -56,7 +56,7 @@ class ECG_Processing:
 
 
     def __threshold(self,signal):
-        #About 30% abouve the mean line
+        #About 30% above the mean line
         #the mean line is like a base line above the noise
         #This is mostly effective in the case of noisy signal where there is an offset to the signal
         threshold = (np.max(signal)-np.mean(signal))*0.3 + np.mean(signal)
@@ -83,9 +83,9 @@ class ECG_Processing:
 
     # Q2 : we want to have an estimate of the longest possible R_R
     # knowing that the R_R interval is between 0.6 to 1 sec (100 to 60 bpm) for a normal person
-    # severeal sources claim resting heart beat may be as low as 40 or 50 for athletes
+    # several sources reports that resting heart beat may be as low as 40 or 50 for athletes
     # so we will use 40 bpm as our threshold -> 1.5 sec
-
+    # no two missing beats occur after one another so the code simplifies to this
     def sinus_arrest_detect(self, RR, time_stamps):
         # mb for missing beats
         mb_start_indices = np.where(RR > 1.5)
